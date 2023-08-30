@@ -73,15 +73,16 @@ class Threshomorphic:
 
 # Example usage
 if __name__ == "__main__":
-    keyManager = Threshomorphic(n_length=256)
+    keyManager = Threshomorphic()
+    keyManager.genKeys(256)
     # print(keyManager.getPrivateKey().p, keyManager.getPrivateKey().q)
     keyManager.savePrivateKey(2, 3)
     keyManager.savePublicKey()
     print(keyManager.getPublicKey().n)
     print(keyManager.loadPublicKey().n)
-    key1 = input('Input First key:')
-    key2 = input('Input Second key:')
-    privateKey = keyManager.combineKey([key1, key2])
-    secretNumber = 5
-    encrypted = keyManager.getPublicKey().encrypt(secretNumber)
-    print(privateKey.decrypt(encrypted))
+    # key1 = input('Input First key:')
+    # key2 = input('Input Second key:')
+    # privateKey = keyManager.combineKey([key1, key2])
+    # secretNumber = 5
+    # encrypted = keyManager.getPublicKey().encrypt(secretNumber)
+    # print(privateKey.decrypt(encrypted))
