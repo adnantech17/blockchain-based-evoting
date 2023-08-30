@@ -25,7 +25,7 @@ key = Shamir.combine(shares)
 print("after thresh", bytes_to_long(key))
 
 newPrivateKey = paillier.PaillierPrivateKey(
-    public_key, private_key.p, private_key.q)
+    public_key, private_key.p, bytes_to_long(key))
 
 
 print(str(private_key))
