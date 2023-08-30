@@ -1,9 +1,8 @@
+from phe import paillier
 from votingSystem import VotingSystem
 
 votes = []
 
-def voteCount():
-    return [sum(x) for x in zip(*votes)]    
 
 def main_menu():
     print("Voting System Menu")
@@ -16,6 +15,7 @@ def main_menu():
     choice = input("Enter your choice: ")
     return choice
 
+
 def main():
     votingSystem = VotingSystem()
     votingSystem.loadAndSavePublicKey()
@@ -24,29 +24,29 @@ def main():
         choice = main_menu()
 
         if choice == "1":
-            vote = [1 , 0 , 0 , 0, 0] 
-            encrypted_vote = votingSystem.encryptVote(vote)            
+            vote = [1, 0, 0, 0, 0]
+            encrypted_vote = votingSystem.encryptVote(vote)
             print("Vote for Candidate 1 recorded.")
         elif choice == "2":
-            vote = [0 , 1 , 0 , 0, 0] 
-            encrypted_vote = votingSystem.encryptVote(vote)            
+            vote = [0, 1, 0, 0, 0]
+            encrypted_vote = votingSystem.encryptVote(vote)
             print("Vote for Candidate 2 recorded.")
         elif choice == "3":
-            vote = [0 , 0 , 1 , 0, 0] 
-            encrypted_vote = votingSystem.encryptVote(vote)            
+            vote = [0, 0, 1, 0, 0]
+            encrypted_vote = votingSystem.encryptVote(vote)
             print("Vote for Candidate 3 recorded.")
         elif choice == "4":
-            vote = [0 , 0 , 0 , 1, 0] 
-            encrypted_vote = votingSystem.encryptVote(vote)            
+            vote = [0, 0, 0, 1, 0]
+            encrypted_vote = votingSystem.encryptVote(vote)
             print("Vote for Candidate 4 recorded.")
         elif choice == "5":
-            vote = [0 , 0 , 0 , 0, 1] 
-            encrypted_vote = votingSystem.encryptVote(vote)            
+            vote = [0, 0, 0, 0, 1]
+            encrypted_vote = votingSystem.encryptVote(vote)
             print("Vote for Candidate 5 recorded.")
         elif choice == "6":
             print("Voting has ended.\n\n")
             print(".........Vote Count Phase begun.........\n\n\n")
-            countedVotes = voteCount()
+            countedVotes = votingSystem.voteCount(votes)
             print(".........Vote Count Phase ended.........\n\n\n")
             print("Need keys from at least two share holders to view the result..")
 
@@ -60,6 +60,7 @@ def main():
             print("Invalid choice. Please select a valid option.")
 
         votes.append(encrypted_vote)
+
 
 if __name__ == "__main__":
     main()
