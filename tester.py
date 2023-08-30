@@ -1,6 +1,6 @@
-from voting import Threshomorphic 
+from votingSystem import VotingSystem 
 
-tm = Threshomorphic()
+tm = VotingSystem()
 
 
 public_key = tm.loadAndSavePublicKey()

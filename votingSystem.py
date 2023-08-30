@@ -2,7 +2,7 @@ from phe import paillier
 from Crypto.Protocol.SecretSharing import Shamir
 from Crypto.Util.number import bytes_to_long, long_to_bytes
 
-class Threshomorphic:
+class VotingSystem:
     def __init__(self):
         self.publicKey, self.privateKey = None, None
     def genKeys(self, n_length=1024):
@@ -34,8 +34,8 @@ class Threshomorphic:
         pKey = self.decode(Shamir.combine(pShares))
         qKey = self.decode(Shamir.combine(qShares))
 
-        privateKey = paillier.PaillierPrivateKey(self.publicKey, pKey, qKey)
-        return privateKey
+        self.privateKey = paillier.PaillierPrivateKey(self.publicKey, pKey, qKey)
+        return self.privateKey
 
     def savePublicKey(self):
         with open('public-keys/pub.key', "wb") as f:
@@ -53,7 +53,7 @@ class Threshomorphic:
         return [self.publicKey.encrypt(x) for x in vote]
 
     def decryptVote(self, encryptedVote):
-        return [self.publicKey.decrypt(x) for x in encryptedVote]
+        return [self.privateKey.decrypt(x) for x in encryptedVote]
 
     def loadPublicKey(self):
         with open('public-keys/pub.key', "rb") as f:
@@ -70,19 +70,3 @@ class Threshomorphic:
 
     def getPrivateKey(self):
         return self.privateKey
-
-# Example usage
-if __name__ == "__main__":
-    keyManager = Threshomorphic()
-    keyManager.genKeys(256)
-    # print(keyManager.getPrivateKey().p, keyManager.getPrivateKey().q)
-    keyManager.savePrivateKey(2, 3)
-    keyManager.savePublicKey()
-    print(keyManager.getPublicKey().n)
-    print(keyManager.loadPublicKey().n)
-    # key1 = input('Input First key:')
-    # key2 = input('Input Second key:')
-    # privateKey = keyManager.combineKey([key1, key2])
-    # secretNumber = 5
-    # encrypted = keyManager.getPublicKey().encrypt(secretNumber)
-    # print(privateKey.decrypt(encrypted))
