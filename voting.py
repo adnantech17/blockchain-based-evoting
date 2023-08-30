@@ -2,36 +2,86 @@ from phe import paillier
 from Crypto.Protocol.SecretSharing import Shamir
 from Crypto.Util.number import bytes_to_long, long_to_bytes
 
-public_key, private_key = paillier.generate_paillier_keypair(n_length=256)
-secret_number_list = [1, 2, 3]
-secret_number_list2 = [3.141592653, 300, 2]
+class Threshomorphic:
+    def __init__(self):
+        self.publicKey, self.privateKey = None, None
+    def genKeys(self, n_length=1024):
+        self.publicKey, self.privateKey = paillier.generate_paillier_keypair(n_length=n_length)
+    def encode(self, value):
+        return long_to_bytes(value)
 
-print("before thres", private_key.q)
+    def decode(self, byte_string):
+        return bytes_to_long(byte_string)
 
-shares = Shamir.split(2, 5, private_key.q)
-# print([bytes_to_long(share[1]) for share in shares])
+    def splitKey(self, k, n, key):
+        shares = Shamir.split(k, n, key)
+        shares = [(idx, self.decode(splittedKey)) for (idx, splittedKey) in shares]
+        return shares
 
-for idx, share in shares:
-    print("Index #%d: %s" % (idx, bytes_to_long(share)))
+    def combineKey(self, datas):
 
-# new_shares = []
-# for x in range(2):
-#     in_str = input("Enter index and share separated by comma: ")
-#     idx, share = [s.strip() for s in in_str.split(",")]
-#     new_shares.append((int(idx), long_to_bytes(int(share))))
+        pShares = []
+        qShares = []
 
-key = Shamir.combine(shares)
+        for data in datas:
+            data = data.split('.')
+            if len(data) == 3:
+                pShares.append((int(data[0]), self.encode(int(data[1]))))
+                qShares.append((int(data[0]), self.encode(int(data[2]))))
+            else:
+                raise ValueError("Invalid key")
 
-print("after thresh", bytes_to_long(key))
+        pKey = self.decode(Shamir.combine(pShares))
+        qKey = self.decode(Shamir.combine(qShares))
 
-newPrivateKey = paillier.PaillierPrivateKey(
-    public_key, private_key.p, bytes_to_long(key))
+        privateKey = paillier.PaillierPrivateKey(self.publicKey, pKey, qKey)
+        return privateKey
 
+    def savePublicKey(self):
+        with open('public-keys/pub.key', "wb") as f:
+            f.write(self.encode(self.publicKey.n))
 
-print(str(private_key))
+    def savePrivateKey(self, k, n):
+        pShares = self.splitKey(k, n, self.privateKey.p)
+        qShares = self.splitKey(k, n, self.privateKey.q)
 
-encrypted_number_list = [public_key.encrypt(x) for x in secret_number_list]
-encrypted_number_list2 = [public_key.encrypt(x) for x in secret_number_list2]
-result = [x + y for x, y in zip(encrypted_number_list, encrypted_number_list2)]
+        for pShare, qShare in zip(pShares, qShares):
+            with open(f'private-keys/{pShare[0]}.key', "w") as f:
+                f.write(f'{pShare[0]}.{pShare[1]}.{qShare[1]}')
 
-print([newPrivateKey.decrypt(x) for x in result])
+    def encryptVote(self, vote):
+        return [self.publicKey.encrypt(x) for x in vote]
+
+    def decryptVote(self, encryptedVote):
+        return [self.publicKey.decrypt(x) for x in encryptedVote]
+
+    def loadPublicKey(self):
+        with open('public-keys/pub.key', "rb") as f:
+            key = f.read()
+        return paillier.PaillierPublicKey(self.decode(key))
+    def loadAndSavePublicKey(self):
+        with open('public-keys/pub.key', "rb") as f:
+            key = f.read()
+        self.publicKey = paillier.PaillierPublicKey(self.decode(key))
+        return self.publicKey
+
+    def getPublicKey(self):
+        return self.publicKey
+
+    def getPrivateKey(self):
+        return self.privateKey
+
+# Example usage
+if __name__ == "__main__":
+    keyManager = Threshomorphic(n_length=256)
+    # print(keyManager.getPrivateKey().p, keyManager.getPrivateKey().q)
+    keyManager.savePrivateKey(2, 3)
+    keyManager.savePublicKey()
+    print(keyManager.getPublicKey().n)
+    print(keyManager.loadPublicKey().n)
+    key1 = input('Input First key:')
+    key2 = input('Input Second key:')
+    privateKey = keyManager.combineKey([key1, key2])
+    secretNumber = 5
+    encrypted = keyManager.getPublicKey().encrypt(secretNumber)
+    print(privateKey.decrypt(encrypted))
